@@ -13,13 +13,14 @@ BOT_NAME = 'papers'
 
 SPIDER_MODULES = ['papers.spiders']
 NEWSPIDER_MODULE = 'papers.spiders'
-
+ynrb_start_date = '2016-10-10'
+ynrb_end_date = '2016-10-10'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'papers (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
