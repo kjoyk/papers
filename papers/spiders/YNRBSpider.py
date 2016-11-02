@@ -45,6 +45,8 @@ class YNRBSpider(scrapy.Spider):
             paper['pages']=[]
             for page in pages:
                 yield scrapy.Request(page[1],callback=self.pageParse1,meta={'paper':paper,'page_name':page[0]})
+                print '---------------'
+                print 'pages is %s' % len(paper['pages'])
         else:
             pass       
         yield paper
@@ -105,7 +107,7 @@ class YNRBSpider(scrapy.Spider):
             image['file_content']=response.body
         else:
             yield scrapy.Request(img[1],callback=self.imagePare,meta={'article':article,'img_type':img[1][img[1].rfind('.')+1:],'img':img})
-        article['images'].append(image)
+        article['images'].append(image)        
         #yield image
         
    

@@ -7,10 +7,9 @@
 import items
 
 class PaperPipeline(object):
-    def process_item(self, item, spider):
-        if isinstance(item,items.PaperItem):
-            for p in item['pages']:
-                print '----------------'
-                print p['title'],len(p['articles'])
-                print '---------------------------'
-        return item
+    def process_item(self, item, spider):        
+        if isinstance(item,items.ImageItem):
+            print '------------'
+            print item['description']
+            print '--------------'
+        #return item
