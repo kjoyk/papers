@@ -119,6 +119,8 @@ class YNRBSpider(scrapy.Spider):
         image=ImageItem()
         image['description']=img[0]
         image['file_type']=img_type
+        image['art']=article
+        image['serial_number']=serial_number
 
         if response.status==200:
             image['file_content']=response.body

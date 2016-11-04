@@ -9,23 +9,6 @@ import os
 import codecs
 
 class PaperPipeline(object):
-    def saveFile(self,path,fileName,data,mode='txt'):#文件保存
-        p=self.pjoin(path,fileName)
-        if mode=='txt':
-            try:
-                with codecs.open(p,'w','utf-8') as f:
-                    f.write(data)
-            except BaseException,eMsg:
-                print eMsg
-        elif mode=='bytes':
-            try:
-                with open(p,'wb') as f:
-                    f.write(data)
-            except BaseException,eMsg:
-                print eMsg
-        else:
-            pirnt u'%s文件写入失败,请指定正确文件类型' % p
-
     def pjoin(self,path,*args):#文件\文件夹路径合并
         pa=os.path.join(path,*args)
         file=pa[pa.rfind('\\')+1:]
@@ -41,9 +24,35 @@ class PaperPipeline(object):
                     print eMsg
         return pa
 
+    def saveFile(self,path,fileName,data,mode='txt'):#文件保存
+        p=self.pjoin(path,fileName)
+        if mode=='txt':
+            try:
+                with codecs.open(p,'w','utf-8') as f:
+                    f.write(data)
+            except BaseException,eMsg:
+                print eMsg
+        elif mode=='bytes':
+            try:
+                with open(p,'wb') as f:
+                    f.write(data)
+            except BaseException,eMsg:
+                print eMsg
+        else:
+            pirnt (u'%s文件写入失败,请指定正确文件类型' % p)
+
     def process_item(self, item, spider):        
         if isinstance(item,items.ImageItem):
-            print '------------'
-            print item['description']
-            print '--------------'
+            description=item['description']
+            file_type=item['file_type']
+            file_content=item['file_content']
+            art=item['art']
+            art_no=art['serial_number']
+            page=art['page']
+            page_no=page['serial_number']
+            date=page['paper']['date']
+            sn=item['serial_number']
+            path=self.pjoin('d:\\pap','%s' % date.year,'%s-%02d' % (date.year,date.month),'%s-%s-%02d' % (date.year,date.month,date.day),'%02d' % page_no,'%02d' % art_no)
+            file_name='%s%02d%02d%02d.%s' % (date.year,date.month,date.day,sn,file_type)
+            self.saveFile(path,file_name,file_content,'bytes')
         #return item
