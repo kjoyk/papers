@@ -43,6 +43,9 @@ class YNRBSpider(scrapy.Spider):
                 #page_name,page_url
                 i=1
                 for page in pages:
+                    if i==1:
+                        #重复抓取首页数据
+                        yield scrapy.Request(page[1]+'?121',callback=self.pageParse1,meta={'paper':paper,'page_name':page[0],'serial_number':i})
                     yield scrapy.Request(page[1],callback=self.pageParse1,meta={'paper':paper,'page_name':page[0],'serial_number':i})
                     i+=1                
             else:
@@ -121,7 +124,6 @@ class YNRBSpider(scrapy.Spider):
         image['file_type']=img_type
         image['art']=article
         image['serial_number']=serial_number
-
         if response.status==200:
             image['file_content']=response.body
         else:
