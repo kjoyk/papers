@@ -6,7 +6,6 @@ import sys
 sys.path.append('..\..')
 from papers import settings
 from papers.items import PaperItem,ArticleItem,PageItem,ImageItem,PageFileItem
-from scrapy import log
 import requests
 
 class YNRBSpider(scrapy.Spider):
@@ -44,13 +43,33 @@ class YNRBSpider(scrapy.Spider):
                 i=1
                 for page in pages:
                     if i==1:
-                        #重复抓取首页数据
-                        yield scrapy.Request(page[1]+'?121',callback=self.pageParse1,meta={'paper':paper,'page_name':page[0],'serial_number':i})
-                    yield scrapy.Request(page[1],callback=self.pageParse1,meta={'paper':paper,'page_name':page[0],'serial_number':i})
+                        #解析首页数据
+                        response.meta['page_name']=page[0]
+                        response.meta['serial_number']=i
+                        response.meata['paper']=paper
+                        for p in self.pageParse1(response):
+                            yield p
+                    else:
+                        yield scrapy.Request(page[1],callback=self.pageParse1,meta={'paper':paper,'page_name':page[0],'serial_number':i})
                     i+=1                
             else:
-                pass
-    
+                print u'旧版'
+                pages=[(page.xpath('text()').extract()[0],response.urljoin(page.xpath('@href').extract()[0]),response.urljoin(page.xpath('../..//div[last()]/a/@href').extract()[0])) for page in response.xpath('//div[@id="layer214"]//a[@id="pageLink"]')]
+                #page_name,page_url,pdf_url
+                i=1
+                for page in pages:
+                    if i==1:
+                        #解析首页数据
+                        response.meta['page_name']=page[0]
+                        response.meta['serial_number']=i
+                        response.meta['paper']=paper
+                        response.meta['pdf_url']=page[2]
+                        for p in self.pageParse2(response):
+                            yield p
+                    else:
+                        yield scrapy.Request(page[1],callback=self.pageParse2,meta={'paper':paper,'page_name':page[0],'serial_number':i,'pdf_url':page[2]})
+                    i+=1
+
     def pageParse1(self,response):#新版
         paper=response.meta['paper']
         serial_number=response.meta['serial_number']
@@ -73,8 +92,32 @@ class YNRBSpider(scrapy.Spider):
         for art in _articles:
             yield scrapy.Request(art[1],callback=self.articleParse,meta={'abbrev_title':art[0],'page':page,'serial_number':i})
             i+=1
+    
+    def pageParse2(self,response):#旧版
+        paper=response.meta['paper']
+        serial_number=response.meta['serial_number']
+        page=PageItem()
+        page['paper']=paper
+        page['title']=response.meta['page_name']
+        page['serial_number']=serial_number
+        #padf版面url
+        page_file_url=response.meta['pdf_url']
+        #jpg版面url
+        page_jpg_url=response.urljoin(response.xpath('//img[@usemap="#PagePicMap"]/@src').extract()[0])
+        #默认下载PDF版面,失败下载JPG版面,在失败返回空的jpg数据
+        yield scrapy.Request(page_file_url,callback=self.page_file_parse,meta={'page':page,'file_type':'pdf','page_jpg_url':page_jpg_url})
+         #文章selectors
+        articles_content=response.xpath('//div[@style="display:inline"]')
+        #文章(title,url)
+        _articles=[(a.xpath('text()').extract()[0],response.urljoin(a.xpath('../@href').extract()[0])) for a in articles_content]
+        i=1
+        for art in _articles:
+            yield scrapy.Request(art[1],callback=self.articleParse1,meta={'abbrev_title':art[0],'page':page,'serial_number':i})
+            i+=1
 
-    def page_file_parse(self,response):
+
+
+    def page_file_parse(self,response):#版面文件下载
         file_type=response.meta['file_type']
         page=response.meta['page']
         page_jpg_url=response.meta['page_jpg_url']
@@ -95,18 +138,38 @@ class YNRBSpider(scrapy.Spider):
                 pageFile['content']=response.body
         yield pageFile
         
-    def articleParse(self,response):
+    def articleParse(self,response):#新版文章解析
         page=response.meta['page']
         serial_number=response.meta['serial_number']
         article=ArticleItem()
         article['page']=page
         article['serial_number']=serial_number
-        article['content']=''.join(response.xpath('//div[@id="layer72"]/table/tr[last()]//*[name(.)!="script"]/text()').extract())
-        article['title']='|'.join(response.xpath('//div[@id="layer72"]/table/tr[position()=1]//*/text()').extract())
+        article['content']=''.join([s for s in response.xpath('//div[@id="layer72"]/table/tr[last()]//*[name(.)!="script"]/text()').extract() if s!='\r\n'])
+        article['title']=''.join([s for s in response.xpath('//div[@id="layer72"]/table/tr[position()=1]//*/text()').extract() if s!='\r\n'])
         #img selectors        
         _imgs=response.xpath('//div[@id="layer72"]/table/tr[last()-1]/td/table/tr')
         #imgs(description,img/src,a/href) img/src像素低,a/href像素高
         imgs=[(''.join(img.xpath('.//*/text()').extract()),response.urljoin(img.xpath('.//img/@src').extract()[0]).decode('gbk'),response.urljoin(img.xpath('.//a/@href').extract()[0])) for img in _imgs]
+        i=1
+        for img in imgs:
+            yield scrapy.Request(img[2],callback=self.imageParse,meta={'article':article,'img_type':img[2][img[2].rfind('.')+1:],'img':img,'serial_number':i,'retry':False})
+            i+=1
+        yield article
+    
+    def articleParse1(self,response):#旧版文章解析
+        page=response.meta['page']
+        serial_number=response.meta['serial_number']
+        article=ArticleItem()
+        article['page']=page
+        article['serial_number']=serial_number
+
+        anchor=response.xpath('//td[@id="tt"]')
+        article['content']=''.join([s for s in anchor.xpath('../../tr[last()]//*[name(.)!="script"]/text()').extract() if s !='\r\n'])
+        article['title']=''.join([s for s in anchor.xpath('.//div/text()').extract() if s !='\r\n'])
+        #img selectors
+        _imgs=anchor.xpath('../../tr[last()]//a')
+        #imgs(description,img/src,a/href) img/src像素低,a/href像素高
+        imgs=[(''.join(img.xpath('../../../tr[last()]//*/text()').extract()),response.urljoin(img.xpath('.//img/@src').extract()[0]),response.urljoin(img.xpath('@href').extract()[0])) for img in _imgs]
         i=1
         for img in imgs:
             yield scrapy.Request(img[2],callback=self.imageParse,meta={'article':article,'img_type':img[2][img[2].rfind('.')+1:],'img':img,'serial_number':i,'retry':False})

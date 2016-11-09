@@ -13,8 +13,11 @@ BOT_NAME = 'papers'
 
 SPIDER_MODULES = ['papers.spiders']
 NEWSPIDER_MODULE = 'papers.spiders'
-ynrb_start_date = '2016-10-10'
-ynrb_end_date = '2016-10-10'
+ynrb_start_date = '2009-05-01'
+ynrb_end_date = '2009-05-01'
+LOG_ENABLED=True
+LOG_FILE='d:\log.log'
+LOG_LEVEL=40
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'papers (+http://www.yourdomain.com)'

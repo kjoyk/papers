@@ -48,11 +48,12 @@ class PaperPipeline(object):
             file_content=item['file_content']
             art=item['art']
             art_no=art['serial_number']
+            art_title=art['title']
             page=art['page']
             page_no=page['serial_number']            
             date=page['paper']['date']
             sn=item['serial_number']
             path=self.pjoin('d:\\pap','%s' % date.year,'%s-%02d' % (date.year,date.month),'%s-%s-%02d' % (date.year,date.month,date.day),'%02d' % page_no,'%02d' % art_no)
-            file_name='%s%02d%02d%02d.%s' % (date.year,date.month,date.day,sn,file_type)            
+            file_name='%s%02d.%s' % (art_title,sn,file_type)
             self.saveFile(path,file_name,file_content,'bytes')
         #return item

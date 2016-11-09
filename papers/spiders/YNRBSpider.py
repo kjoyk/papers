@@ -6,7 +6,6 @@ import sys
 sys.path.append('..\..')
 from papers import settings
 from papers.items import PaperItem,ArticleItem,PageItem,ImageItem
-from scrapy import log
 import requests
 
 
