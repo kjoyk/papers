@@ -15,9 +15,12 @@ SPIDER_MODULES = ['papers.spiders']
 NEWSPIDER_MODULE = 'papers.spiders'
 ynrb_start_date = '2009-05-01'
 ynrb_end_date = '2009-05-01'
-LOG_ENABLED=True
-LOG_FILE='d:\log.log'
-LOG_LEVEL=40
+rmrb_start_date = '2009-05-01'
+rmrb_end_date = '2009-05-01'
+
+LOG_ENABLED = True
+LOG_FILE = r'd:\log.log'
+LOG_LEVEL = 40
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'papers (+http://www.yourdomain.com)'
@@ -36,39 +39,39 @@ ROBOTSTXT_OBEY = False
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
-#DEFAULT_REQUEST_HEADERS = {
+# DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 #   'Accept-Language': 'en',
 #}
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    'papers.middlewares.MyCustomSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
+# DOWNLOADER_MIDDLEWARES = {
 #    'papers.middlewares.MyCustomDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
+# EXTENSIONS = {
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'papers.pipelines.PaperPipeline': 300
+    'papers.pipelines.PaperPipeline': 300
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

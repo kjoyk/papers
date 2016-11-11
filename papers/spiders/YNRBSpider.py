@@ -5,7 +5,7 @@ import datetime
 import sys
 sys.path.append('..\..')
 from papers import settings
-from papers.items import PaperItem,ArticleItem,PageItem,ImageItem
+from papers.items import ArticleItem,PageItem,ImageItem
 import requests
 
 
