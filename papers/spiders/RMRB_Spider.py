@@ -73,14 +73,14 @@ class RMRBSpider(scrapy.Spider):
         #定义常量
         codeUrl = r'http://paper.people.com.cn/pdfcheck/validatecodegen'
         fnUrl = r'http://paper.people.com.cn/pdfcheck/check/checkCode.jsp'
-        
+        control=False
         #meta取值
         file_type = response.meta['file_type']
         code = response.meta['code']
         page=response.meta['page']
         page_file = response.meta['page_file']
         page_jpg_url = response.meta['page_jpg_url']
-
+        
         #PageFileItem赋值
         pageFile = PageFileItem()
         pageFile['file_type'] = file_type
@@ -88,6 +88,7 @@ class RMRBSpider(scrapy.Spider):
         if code == '':
             image = Image.open(StringIO.StringIO(response.body))
             code = pytesseract.image_to_string(image)
+            print '%02d page code:%s' % (page['serial_number'],code)
             if len(code) != 4:
                 yield scrapy.Request(codeUrl, callback=self.pageFileParse, meta={'page': page, 'file_type': 'pdf', 'code': '', 'page_file': page_file, 'page_jpg_url': page_jpg_url})
             else:
@@ -100,10 +101,12 @@ class RMRBSpider(scrapy.Spider):
                     # pdf版面获取失败,则获取JPG版面
                 else:
                     pageFile['content'] = response.body
+                    control=True
             else:
+                control=True
                 if response.status != 200:
                     # JPG版面获取失败,则返回空值
                     pageFile['content'] = ''
                 else:
                     pageFile['content'] = response.body
-            yield pageFile
+        if control:yield pageFile
